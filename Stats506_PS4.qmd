@@ -1,0 +1,75 @@
+---
+title: "Stats506_PS4"
+author: "Heleyna Tucker"
+format:
+  html:
+    embed-resources: true
+editor: visual
+---
+
+# Problem 1 - Tidyverse
+
+I will use the tidyverse for this problem. In particular, I will use piping and dplyr as much as I am able.
+
+Install and load the nycflights13, tidyverse, and dplyr packages below:
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(dplyr)
+```
+
+### Part A: Generating summary tables for the data
+
+Below I will generate a table (which can just be a nicely printed tibble) reporting the mean and median departure delay per airport. I will generate a second table (which can also be printed as a tibble) reporting the mean and median arrival delay per airport. Exclude any destination with under 10 flights. Do this exclusion through code, not manually.
+
+Additionally, I will:
+
+-   Order both tables in descending mean delay.
+
+-   Both tables should use the airport *names* not the airport *codes*.
+
+-   Both tables should print all rows.
+
+Visualize the data below:
+
+```{r}
+head(airports)
+head(flights)
+```
+
+Below, using tidyverse pipping techniques, I will first find the mean and median of dep_delay in the flights data set. I will then order the flights in descending mean order. Using left_join() I will access the name of the airports from the airports data set.
+
+```{r}
+dep_delays <- flights %>%
+  group_by(origin) %>%
+  summarize(
+    mean_delay_dep = mean(dep_delay, na.rm = TRUE),
+    median_delay_dep = median(dep_delay, na.rm = TRUE),
+  ) %>%
+  arrange(desc(mean_delay_dep)) %>%
+  left_join(airports, by = c("origin" = "faa")) %>%
+  select(name, mean_delay_dep, median_delay_dep)
+print(dep_delays)
+```
+
+Below I use the same technique as above to order and find the mean and median for the arrival airport. I will also exclude any destination that has under 10 flights using a count variable and filter() to filter out any flights who have a flight count less than or equal to 10:
+
+```{r}
+arrival_delays <- flights %>%
+  group_by(dest) %>%
+  summarize(
+    mean_delay_arr = mean(dep_delay, na.rm = TRUE),
+    median_delay_arr = median(dep_delay, na.rm = TRUE),
+    count = n()
+  ) %>%
+  filter(count >= 10) %>%
+  arrange(desc(mean_delay_arr)) %>%
+  left_join(airports, by = c("dest" = "faa")) %>%
+  select(name, mean_delay_arr, median_delay_arr)
+print(arrival_delays)
+```
+
+### Part B: How many flights did the aircraft model with the fastest average speed take?
+
+Below I will answer the question and produce a tibble with 1 row, and entries for the model, average speed (in MPH) and number of flights.
