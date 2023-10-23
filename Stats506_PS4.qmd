@@ -289,7 +289,7 @@ Below I fit a model predicting the LogTotalElectricityCost (made in Part C) usin
 ```         
 /* Fit a weighted linear regression model */
 PROC REG DATA=recs;
-    WEIGHT NWEIGHT; /* Replace with the actual variable name for sampling weights */
+    WEIGHT NWEIGHT;
     MODEL LogTotalElectricityCost = TOTROOMS PRKGPLC1;
     TITLE "Linear Regression Model for Log of Total Electricity Cost";
 RUN;
@@ -302,7 +302,31 @@ Notably, from the ouput html file attached to the github repo, the predictors bo
 Use the model to generate predicted values and create a scatterplot of predicted total electricity cost vs. actual total electricity cost (not on the log scale).
 
 ```         
+/*Obtain the regResults, Predictions of Dollarel and residuals of dollarel from the linear model in part D */
+PROC REG DATA=recs;
+    WEIGHT NWEIGHT;
+    MODEL LogTotalElectricityCost = TOTROOMS PRKGPLC1;
+    OUTPUT out=RegResults predicted = PredictedDOLLAREL residual = ResidualDOLLAREL;
+    TITLE "Linear Regression Model for Log of Total Electricity Cost";
+RUN;
+
+/*Convert from log scale to original*/
+DATA RegResults_nolog;
+    SET RegResults;
+    ActualDOLLAREL = exp(LogTotalElectricityCost);
+    PredictedDOLLAREL = exp(PredictedDOLLAREL); /* Convert back to non-log scale */
+RUN;
+
+/* Create a scatterplot of predicted vs. actual total electricity cost */
+PROC SGPLOT DATA=RegResults_nolog;
+    SCATTER X=ActualDOLLAREL Y=PredictedDOLLAREL;
+    TITLE "Scatterplot of Predicted vs. Actual Total Electricity Cost";
+    XAXIS LABEL="Actual Total Electricity Cost";
+    YAXIS LABEL="Predicted Total Electricity Cost";
+RUN;
 ```
+
+From the scatterplot, we can observe some actual and predicted values being quite close to each other, however some points are off. For example, we can see that one data point with an actual value of about 15000 was predicted to have a value of 2500 which is very off.
 
 # Problem 4 - Multiple tools
 
@@ -375,14 +399,96 @@ Above will make a new file public_sub.sas7bdat that has all the needed variables
 Demonstrate that you\'ve successfully extracted the appropriate data by showing the number of observations and variables. (Report these values via Stata code don\'t just say \"As we see in the Properties window\". The Codebook should give you a way to ensure the number of rows is as expected.)
 
 ```         
+import sas using "C:\Users\heleyna\Downloads\public_sub (1).sas7bdat"
+save "C:\Users\heleyna\Downloads\public_sub.dta", replace
+
+describe
+
+---------------------------------------------------------------------
+Output:
+
+
+Contains data from C:\Users\heleyna\Downloads\public_sub.dta
+ Observations:        11,667                  
+    Variables:             8                  23 Oct 2023 18:09
+--------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+--------------------------------------------------------------------------------
+CaseID          int     %10.0g                CaseID 2022
+B3              byte    %10.0g                Compared to 12 months ago, would
+                                                you say that you (and your
+                                                family) are better o
+ND2             byte    %10.0g                Five years from now, do you think
+                                                that the chance that you will
+                                                experience a nat
+ppethm          byte    %10.0g                Race / Ethnicity
+ppeduc5         byte    %10.0g                Education (5 Categories)
+GH1             byte    %10.0g                This section will ask some
+                                                questions about your home and
+                                                your car. Do you:
+B7_a            byte    %10.0g                In your community - How would you
+                                                rate economic conditions today:
+weight_pop      double  %10.0g                Post-stratification weight - Main
+                                                qualified respondents scaled to
+                                                U.S. populatio
+--------------------------------------------------------------------------------
+Sorted by: 
+
+. 
+end of do-file
 ```
+
+Above we use the describe function to show how many observations and variables we have in the data. As we can see, the number of variables and observations are what we would expect.
 
 ### Part E: Convert response to binary
 
 The response variable is a Likert scale; convert it to a binary of worse off versus same/better.
 
 ```         
+tabulate B3
+gen worse_off = (B3 <=2)
+tabulate worse_off
+---------------------------------------------------------------------
+Output:
+
+. tabulate B3
+
+Compared to |
+  12 months |
+ ago, would |
+    you say |
+   that you |
+  (and your |
+family) are |
+   better o |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |      1,020        8.74        8.74
+          2 |      3,276       28.08       36.82
+          3 |      5,287       45.32       82.14
+          4 |      1,605       13.76       95.89
+          5 |        479        4.11      100.00
+------------+-----------------------------------
+      Total |     11,667      100.00
+
+. 
+end of do-file
+
+. do "C:\Users\heleyna\AppData\Local\Temp\1\STD4380_000000.tmp"
+
+. gen worse_off = (B3 <=2)
+
+. tabulate worse_off
+
+  worse_off |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      7,371       63.18       63.18
+          1 |      4,296       36.82      100.00
+------------+-----------------------------------
+      Total |     11,667      100.00
 ```
+
+Above, you can observe that the inital B3 variable has 5 different categories, explained in the codebook. 1 and 2 correspond with worse off and (3-5) correspond to the same/better. I created worse_off to be a binary variable that is 0 when response variable is same/better and 1 if the response variable is worse. As we can see, the groups in B3 add up to be what we would expect for the new worse_off variable.
 
 ### Part F: Logistic regression
 
@@ -399,11 +505,82 @@ Carry out a logisitic regression model accounting for the complex survey design.
 Notice that the model does not provide a pseudo-Rsq. R has the functionality to do this.
 
 ```         
+svy: logit worse_off i.ND2 i.ppethm i.ppeduc5 i.GH1 i.B7_a 
+
+---------------------------------------------------------------------
+Output:
+
+. do "C:\Users\heleyna\AppData\Local\Temp\1\STD4380_000000.tmp"
+
+. 
+. svy: logit worse_off i.ND2 i.ppethm i.ppeduc5 i.GH1 i.B7_a 
+(running logit on estimation sample)
+
+Survey: Logistic regression
+
+Number of strata =      1                        Number of obs   =      11,667
+Number of PSUs   = 11,667                        Population size = 255,114,223
+                                                 Design df       =      11,666
+                                                 F(18, 11649)    =       52.04
+                                                 Prob > F        =      0.0000
+
+------------------------------------------------------------------------------
+             |             Linearized
+   worse_off | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ND2 |
+          2  |  -.0637524   .0913569    -0.70   0.485    -.2428273    .1153224
+          3  |   .0106612   .0846977     0.13   0.900    -.1553606    .1766829
+          4  |  -.2441827   .1996803    -1.22   0.221    -.6355896    .1472241
+          5  |  -.2242899   .1684693    -1.33   0.183     -.554518    .1059381
+             |
+      ppethm |
+          2  |  -.8609733   .0809155   -10.64   0.000    -1.019581   -.7023653
+          3  |  -.4471861   .1193673    -3.75   0.000    -.6811659   -.2132063
+          4  |  -.2682521   .0708618    -3.79   0.000    -.4071531   -.1293511
+          5  |   .0975323   .1300938     0.75   0.453    -.1574733    .3525379
+             |
+     ppeduc5 |
+          2  |   .0040619   .1016415     0.04   0.968    -.1951724    .2032963
+          3  |   -.031632   .0987888    -0.32   0.749    -.2252746    .1620107
+          4  |  -.1496105   .1023687    -1.46   0.144    -.3502702    .0510493
+          5  |  -.0312768   .1061902    -0.29   0.768    -.2394273    .1768737
+             |
+         GH1 |
+          2  |   .0300226   .0561748     0.53   0.593    -.0800894    .1401345
+          3  |  -.1125773   .0590548    -1.91   0.057    -.2283346    .0031799
+          4  |  -.3648809   .0987005    -3.70   0.000    -.5583504   -.1714115
+             |
+        B7_a |
+          2  |  -.8141041   .0599256   -13.59   0.000    -.9315684   -.6966399
+          3  |  -1.772314    .067998   -26.06   0.000    -1.905601   -1.639026
+          4  |  -2.621257   .1984799   -13.21   0.000    -3.010311   -2.232204
+             |
+       _cons |   .6315009   .1310518     4.82   0.000     .3746174    .8883843
+------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. 
 ```
+
+As we can see above, the logistic regression can give us the answer to the researcher's question. The variable that corresponds to **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years** would be ND2. All of the p-values for each category show insignificance on the 0.05 scale. Each confidence interval includes 0 as well which indicates insignificance. Therefore, based on this analysis, we would fail to reject the null hypothesis that **the respondent\'s family is better off, the same, or worse off finanicially compared to 12 month\'s ago** cannot be predicted by **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years**.
 
 ### Part G: Get the data out of Stata and into R
 
+Convert .dta into .csv in Stata below:
+
 ```         
+. do "C:\Users\heleyna\AppData\Local\Temp\1\STD4380_000000.tmp"
+
+. export delimited "C:\Users\heleyna\Downloads\public_sub.csv", delimiter(",")
+file C:\Users\heleyna\Downloads\public_sub.csv saved
+
+. 
+end of do-file
+
+. 
 ```
 
 ## R
