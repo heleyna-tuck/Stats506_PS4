@@ -109,7 +109,7 @@ Below I will load the Chicago NNMAPS data we used in the visualization lectures.
 
 -   data: the data set to obtain data from.
 
--   Celsius: logically indicating whether the results should be in Celsius. Default FALSE.
+-   celsius: logically indicating whether the results should be in Celsius. Default FALSE.
 
 -   average_fn: A function with which to compute the mean. Default is mean.
 
@@ -125,7 +125,47 @@ head(chicagoNMMAPS)
 I will the write the get_temp() function below:
 
 ```{r}
-get_temp <- function(){
+get_temp <- function(month, year, data, celsius = FALSE, average_fn = mean()){
+  # Validate and sanitize the input
+  if (!is.numeric(year) || !year %in% data$year) {
+    stop("Invalid year. Please provide a numeric year between 2001 and 2020.")
+  }
   
+  if (is.numeric(month) && month %in% 1:12) {
+    month <- month.name[month]
+  } else if (!is.character(month) || !month %in% tolower(month.name)) {
+    stop("Invalid month. Please provide a valid numeric value (1-12) or a month name.")
+  }
+  #Convert months inputed as a string to a numeric:
+  if(is.character(month) && tolower(month) %in% tolower(month.name)){
+    month <- match(tolower(month), tolower(month.name))
+    print(month)
+  }
+ # Filter the data for the specified year and month
+  result <- data %>%
+    filter(year == year, month == month) %>%
+    select(temperature) %>%
+    pull() %>%
+    average_fn()
+  
+  # Convert to Celsius if necessary
+  if (celsius) {
+    result <- (result - 32) * 5/9
+  }
+  
+  return(result)
 }
+```
+
+```{r}
+get_temp("Apr", 1999, data = nnmaps)
+get_temp("Apr", 1999, data = nnmaps, celsius = TRUE)
+get_temp(10, 1998, data = nnmaps, average_fn = median)
+get_temp(13, 1998, data = nnmaps)
+get_temp(2, 2005, data = nnmaps)
+get_temp("November", 1999, data =nnmaps, celsius = TRUE,
+         average_fn = function(x) {
+           x %>% sort -> x
+           x[2:(length(x) - 1)] %>% mean %>% return
+         })
 ```
