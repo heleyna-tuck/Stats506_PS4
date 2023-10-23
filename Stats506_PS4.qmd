@@ -282,10 +282,20 @@ The output of this part showed that around 7.5 was the most frequent log of tota
 
 ### Part D: Fit a linear regression model
 
-Fit a linear regression model predicting the log of the total electricity cost based upon the number of rooms in the hose and whether or not the house has a garage. (Don't forget weights)
+Fit a linear regression model predicting the log of the total electricity cost based upon the number of rooms in the house and whether or not the house has a garage. (Don't forget weights)
+
+Below I fit a model predicting the LogTotalElectricityCost (made in Part C) using the total number of rooms (TOTROOMS) and the whether or not the house has a garage (PRKGPLC1):
 
 ```         
+/* Fit a weighted linear regression model */
+PROC REG DATA=recs;
+    WEIGHT NWEIGHT; /* Replace with the actual variable name for sampling weights */
+    MODEL LogTotalElectricityCost = TOTROOMS PRKGPLC1;
+    TITLE "Linear Regression Model for Log of Total Electricity Cost";
+RUN;
 ```
+
+Notably, from the ouput html file attached to the github repo, the predictors both have a significant p-value (\< 0.05). With TOTROOMS having a coefficient of 0.08780 and PRKGLPLC1 having a coefficient of 0.06878.
 
 ### Part E: Predicted values and scatterplot
 
@@ -295,3 +305,119 @@ Use the model to generate predicted values and create a scatterplot of predicted
 ```
 
 # Problem 4 - Multiple tools
+
+The researcher\'s interest is in whether long-term concerns about climate change impact current day concerns about financial stability. To address this, the particular research question of interest is whether **the respondent\'s family is better off, the same, or worse off finanicially compared to 12 month\'s ago** can be predicted by **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years**. We also want to control for
+
+-   How they rate the economic conditions today in the country.
+
+-   Whether they own (with or without a mortgage) or rent or neither their home.
+
+-   Education (use the 4-category version)
+
+-   Race (use the 5-category version)
+
+We\'re going to pretend the raw data is extremely large and that we need to extract the subset of the data we\'re going to use before we can open it in Stata or R.
+
+Additionally, the data comes from a complex survey design, so we need to account for that in the analysis.
+
+### Part A: Codebook generation
+
+Take a look at the codebook. For very minor extra credit, how was the Codebook generated? (no loss of points if I decide not to do this)
+
+## SAS
+
+### Part B: Import Data into SAS, use proc sql to slect only the variables you'll need for your analysis, as well as subsetting the data if needed.
+
+Import the data into SAS (you can load the SAS data directly or import the CSV) and use `proc sql` to select only the variables you\'ll need for your analysis, as well as subsetting the data if needed. You can carry out variable transformations now, or save it for Stata.
+
+```         
+/* data libraries for reading/writing data: -------------------------------- */
+%let in_path = ~/sasuser.v94/input_data;
+%let out_path = ~/sasuser.v94/output_data; 
+libname in_lib "&in_path."; 
+libname out_lib "&out_path.";
+
+data public; 
+ set in_lib.public2022;
+ 
+ proc sql;
+  create table subset_data as
+  select
+  	CaseID,
+  	B3,
+  	ND2,
+  	ppethm,
+  	ppeduc5,
+  	GH1,
+  	B7_a
+  from public
+ quit;
+```
+
+Above I used select in proc sql to get all the needed variables I will use for my analysis.
+
+### Part C: Get the data out of SAS and into Stata
+
+Get the data out of SAS and into Stata. (Note that this could mean saving the data in SAS format, then importing into Stata; or exporting from SAS into Stata format then loading it in Stata; or exporting from SAS into a generic format and importing into Stata - whichever works for you.)
+
+```         
+data out_lib.public_sub;
+ set public_sub;
+run;
+```
+
+Above will make a new file public_sub.sas7bdat that has all the needed variables. This will have to be exported from SAS into Stata format through Stata below:
+
+## Stata
+
+### Part D: Demonstrate that you'be successfully extracted the appropriate data 
+
+Demonstrate that you\'ve successfully extracted the appropriate data by showing the number of observations and variables. (Report these values via Stata code don\'t just say \"As we see in the Properties window\". The Codebook should give you a way to ensure the number of rows is as expected.)
+
+```         
+```
+
+### Part E: Convert response to binary
+
+The response variable is a Likert scale; convert it to a binary of worse off versus same/better.
+
+```         
+```
+
+### Part F: Logistic regression
+
+Use the following code to tell Stata that the data is from a complex sample:
+
+```         
+svyset CaseID [pw=weight_pop]
+```
+
+(Modify `CaseID` and `weight_pop` as appropriate if you have different variable names; those names are taken from the Codebook.)
+
+Carry out a logisitic regression model accounting for the complex survey design. Be sure to treat variables you think should be categorical appropriately. From these results, provide an answer to the researchers question of interest.
+
+Notice that the model does not provide a pseudo-Rsq. R has the functionality to do this.
+
+```         
+```
+
+### Part G: Get the data out of Stata and into R
+
+```         
+```
+
+## R
+
+### Part H: Obtain the pseudo-Rsq value for the logistic model fit above and report it.
+
+Use the survey package to obtain the pseudo-Rsq. Use the following code to set up the complex survey design:
+
+```         
+svydesign(id = ~ caseid, weight = ~ weight_pop, data = dat)
+```
+
+Obtain the pseudo-Rsq value for the logistic model fit above and report it:
+
+```{r}
+
+```
