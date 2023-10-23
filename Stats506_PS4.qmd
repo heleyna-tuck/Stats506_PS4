@@ -118,34 +118,39 @@ The output should be a numeric vector of length 1. The code inside the function 
 load in the Chicago NMMAPS data below from the dlnm library. Visualize data:
 
 ```{r}
-
+nnmaps <- read_csv('/Users/19892/OneDrive/Documents/STATS506/ProblemSets/Stats506_PS4/chicago-nmmaps.csv')
+head(nnmaps)
+colnames(nnmaps)
 ```
 
 I will the write the get_temp() function below:
 
 ```{r}
-get_temp <- function(month, year, data, celsius = FALSE, average_fn = mean()){
+get_temp <- function(month, year_num, data, celsius = FALSE, average_fn = mean){
   # Validate and sanitize the input
-  if (!is.numeric(year) || !year %in% data$year) {
-    stop("Invalid year. Please provide a numeric year between 2001 and 2020.")
+  if (!is.numeric(year_num) || !year_num %in% data$year) {
+    stop("Invalid year. Please provide a numeric year between 1997 and 2000.")
   }
-  
+  month <- month %>% tolower()
   if (is.numeric(month) && month %in% 1:12) {
     month <- month.name[month]
-  } else if (!is.character(month) || !month %in% tolower(month.name)) {
+  } 
+  else if (!is.character(month) || !month %in% substr(tolower(month.name), 1, 3)) {
     stop("Invalid month. Please provide a valid numeric value (1-12) or a month name.")
   }
   #Convert months inputed as a string to a numeric:
-  if(is.character(month) && tolower(month) %in% tolower(month.name)){
-    month <- match(tolower(month), tolower(month.name))
-    print(month)
+  if(is.character(month) && tolower(month) %in% substr(tolower(month.name), 1, 3)){
+    month <- as.numeric(match(tolower(month), substr(tolower(month.name), 1, 3)))
   }
+print(typeof(year_num))
+print(typeof(month))
+print(year_num)
+print(month)
+print(head(data))
  # Filter the data for the specified year and month
   result <- data %>%
-    filter(year == year, month == month) %>%
-    select(temperature) %>%
-    pull() %>%
-    average_fn()
+    filter(year == year_num, month_numeric == month) 
+  print(result)
   
   # Convert to Celsius if necessary
   if (celsius) {
@@ -157,14 +162,10 @@ get_temp <- function(month, year, data, celsius = FALSE, average_fn = mean()){
 ```
 
 ```{r}
+result <- nnmaps %>%
+  filter(year == 1999, month_numeric == 4)
+```
+
+```{r}
 get_temp("Apr", 1999, data = nnmaps)
-get_temp("Apr", 1999, data = nnmaps, celsius = TRUE)
-get_temp(10, 1998, data = nnmaps, average_fn = median)
-get_temp(13, 1998, data = nnmaps)
-get_temp(2, 2005, data = nnmaps)
-get_temp("November", 1999, data =nnmaps, celsius = TRUE,
-         average_fn = function(x) {
-           x %>% sort -> x
-           x[2:(length(x) - 1)] %>% mean %>% return
-         })
 ```
