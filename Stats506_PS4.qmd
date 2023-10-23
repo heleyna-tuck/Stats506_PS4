@@ -36,6 +36,7 @@ Visualize the data below:
 ```{r}
 head(airports)
 head(flights)
+head(planes)
 ```
 
 Below, using tidyverse pipping techniques, I will first find the mean and median of dep_delay in the flights data set. I will then order the flights in descending mean order. Using left_join() I will access the name of the airports from the airports data set.
@@ -73,3 +74,25 @@ print(arrival_delays)
 ### Part B: How many flights did the aircraft model with the fastest average speed take?
 
 Below I will answer the question and produce a tibble with 1 row, and entries for the model, average speed (in MPH) and number of flights.
+
+First, I will calculate the average speed in MPH for each aircraft below and make a new variable flights_speed with these averages:
+
+Because I need to access the model of each plane, I will use a left_join to join the flights and planes data with the tailnum variable, group by the model and calculate the average distance for each model and the number of flights each model has. This is shown below:
+
+```{r}
+flights_speed <- flights %>%
+  left_join(planes, by = "tailnum") %>%
+  group_by(model) %>%
+  summarize(avg_speed_mph = sum(distance)/ sum(air_time), 
+            n_flights = n()) %>%
+  arrange(desc(avg_speed_mph))
+```
+
+Get the aircraft with the fastest average speed:
+
+```{r}
+fastest <- flights_speed[1,]
+fastest
+```
+
+Above we can see that the plane with the fastest average flights speed is model 777-222 and it has 4 total flights.
