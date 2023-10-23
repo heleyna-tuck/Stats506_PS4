@@ -118,8 +118,7 @@ The output should be a numeric vector of length 1. The code inside the function 
 load in the Chicago NMMAPS data below from the dlnm library. Visualize data:
 
 ```{r}
-library(dlnm)
-head(chicagoNMMAPS)
+
 ```
 
 I will the write the get_temp() function below:
