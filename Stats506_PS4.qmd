@@ -96,3 +96,36 @@ fastest
 ```
 
 Above we can see that the plane with the fastest average flights speed is model 777-222 and it has 4 total flights.
+
+# Problem 2 - get_temp()
+
+For this problem, I will use the tidyverse. In particular, I will use piping and dplyr as much as I am able.
+
+Below I will load the Chicago NNMAPS data we used in the visualization lectures. I will write a function get_temp() that allows a user to request the average temperature for a given month. The arguments should be:
+
+-   month: Month, either a numeric 1-12 or a string.
+
+-   year: A numeric year.
+
+-   data: the data set to obtain data from.
+
+-   Celsius: logically indicating whether the results should be in Celsius. Default FALSE.
+
+-   average_fn: A function with which to compute the mean. Default is mean.
+
+The output should be a numeric vector of length 1. The code inside the function should, as with the rest of this problem, use the tidyverse. Be sure to sanitize the input.
+
+load in the Chicago NMMAPS data below from the dlnm library. Visualize data:
+
+```{r}
+library(dlnm)
+head(chicagoNMMAPS)
+```
+
+I will the write the get_temp() function below:
+
+```{r}
+get_temp <- function(){
+  
+}
+```
