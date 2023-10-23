@@ -123,34 +123,28 @@ head(nnmaps)
 colnames(nnmaps)
 ```
 
-I will the write the get_temp() function below:
+I will the write the get_temp() function below. One thing to not is that I changed month and year to month_in and year_in so there is no overlap with the initial dataset variable names. This was indicated by the professor to be ok:
 
 ```{r}
-get_temp <- function(month, year_num, data, celsius = FALSE, average_fn = mean){
+get_temp <- function(month_in, year_in, data, celsius = FALSE, average_fn = mean){
   # Validate and sanitize the input
-  if (!is.numeric(year_num) || !year_num %in% data$year) {
+  if (!is.numeric(year_in) || !year_in %in% data$year) {
     stop("Invalid year. Please provide a numeric year between 1997 and 2000.")
   }
-  month <- month %>% tolower()
-  if (is.numeric(month) && month %in% 1:12) {
-    month <- month.name[month]
-  } 
-  else if (!is.character(month) || !month %in% substr(tolower(month.name), 1, 3)) {
+  month_in <- month_in %>% tolower()
+  if ((!is.character(month_in) && !month_in %in% 1:12) || !month_in %in% substr(tolower(month.name), 1, 3)) {
     stop("Invalid month. Please provide a valid numeric value (1-12) or a month name.")
   }
   #Convert months inputed as a string to a numeric:
-  if(is.character(month) && tolower(month) %in% substr(tolower(month.name), 1, 3)){
-    month <- as.numeric(match(tolower(month), substr(tolower(month.name), 1, 3)))
+  if(is.character(month_in) && tolower(month_in) %in% substr(tolower(month.name), 1, 3)){
+    month_in <- as.numeric(match(tolower(month_in), substr(tolower(month.name), 1, 3)))
   }
-print(typeof(year_num))
-print(typeof(month))
-print(year_num)
-print(month)
-print(head(data))
  # Filter the data for the specified year and month
   result <- data %>%
-    filter(year == year_num, month_numeric == month) 
-  print(result)
+    filter(year == year_in, month_numeric == month_in) %>%
+    select(temp) %>%
+    pull() %>%
+    average_fn()
   
   # Convert to Celsius if necessary
   if (celsius) {
@@ -159,11 +153,6 @@ print(head(data))
   
   return(result)
 }
-```
-
-```{r}
-result <- nnmaps %>%
-  filter(year == 1999, month_numeric == 4)
 ```
 
 ```{r}
