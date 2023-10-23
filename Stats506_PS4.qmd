@@ -120,7 +120,6 @@ load in the Chicago NMMAPS data below from the dlnm library. Visualize data:
 ```{r}
 nnmaps <- read_csv('/Users/19892/OneDrive/Documents/STATS506/ProblemSets/Stats506_PS4/chicago-nmmaps.csv')
 head(nnmaps)
-colnames(nnmaps)
 ```
 
 I will the write the get_temp() function below. One thing to not is that I changed month and year to month_in and year_in so there is no overlap with the initial dataset variable names. This was indicated by the professor to be okay:
@@ -172,7 +171,7 @@ get_temp <- function(month_in, year_in, data, celsius = FALSE, average_fn = mean
 }
 ```
 
-Test the function below. As we can see, the function is working as we would expect:
+Test the function below. As we can see, it is working as we would expect:
 
 ```{r}
 get_temp("Apr", 1999, data = nnmaps)
@@ -212,22 +211,74 @@ Access the RECS 2020 data and download a copy of the data. Load or import the da
 
 What state has the highest percentage of records? What percentage of all records correspond to Michigan? (Don't forget to account for the sampling weights!)
 
+The code that I used for this question can be found below:
+
 ```         
+/* data libraries for reading/writing data: -------------------------------- */
+%let in_path = ~/sasuser.v94/input_data;
+%let out_path = ~/sasuser.v94/output_data; 
+libname in_lib "&in_path."; 
+libname out_lib "&out_path.";
+
+data recs; 
+ set in_lib.recs2020_public_v5;
+
+proc freq data = recs;
+	TABLES state_name / OUT = StateFreq;
+	WEIGHT NWEIGHT;
+RUN;
+
+proc sort data = StateFreq;
+	BY DESCENDING COUNT;
+RUN;
+
+DATA MichiganPercentage;
+	SET StateFreq;
+	WHERE state_name = 'Michigan';
+RUN;
 ```
+
+Above loads in the data as recs, then gets the frequency of the state records, taking into account the weight of NWEIGHT. Then, proc sort sorts the data into descending order by the count/frequency of records to obtain the highest percentage of records. This was found to be California The next code block finds the percentage corresponding to Michigan (you could look at the original frequency table and find Michigan). This was found to be about 3.17%
 
 ### Part B: Generate histogram (total electricity cost)
 
 Generate a histogram of the total electricity cost in dollars, amongst those with a strictly positive cost.
 
+Below is the code I used for this part, using the variable DOLLAREL for the total electricity cost in dollars. I used the WHERE command to get all the strictly positive values.
+
 ```         
+PROC SGPLOT DATA=recs;
+   HISTOGRAM DOLLAREL / 
+      FILLATTRMAP=GraphDataAttrMap;
+   WHERE DOLLAREL > 0; /* Filter for strictly positive costs */
+   XAXIS LABEL="Total Electricity Cost (Dollars)";
+   YAXIS LABEL="Frequency";
+RUN;
 ```
+
+When we run the above code, we can see from the histogram that around 1,000 dollars tends to be the most frequent total electricity cost.
 
 ### Part C: Histogram (log total electricity cost)
 
-Generate a histogram of the log of the total electricity cost.
+Generate a histogram of the log of the total electricity cost. Below I will first make a new variable called LogTotalElectricityCost that takes the log of the total electricity cost of the recs data. Then, I will write the same code as in part B to make the histogram
 
 ```         
+DATA recs;
+    SET recs;
+    LogTotalElectricityCost = log(DOLLAREL);
+RUN;
+
+/* Create a histogram of the log of the total electricity cost */
+PROC SGPLOT DATA=recs;
+    HISTOGRAM LogTotalElectricityCost / 
+        FILLATTRMAP=GraphDataAttrMap;
+    WHERE LogTotalElectricityCost > 0; /* Filter for strictly positive log costs */
+    XAXIS LABEL="Log of Total Electricity Cost";
+    YAXIS LABEL="Frequency";
+RUN;
 ```
+
+The output of this part showed that around 7.5 was the most frequent log of total electricity cost.
 
 ### Part D: Fit a linear regression model
 
