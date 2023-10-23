@@ -134,7 +134,7 @@ I will the write the get_temp() function below. One thing to not is that I chang
 #' @param celsius boolean to say whether the user wants the result output to be in fahrenheit (FALSE) or celsius (TRUE)
 #' @param average_fn average function to use indicated by user but mean function is used by default
 #'
-#' @return average temperature
+#' @return result - average temperature
 #' @export
 #'
 #' @examples
@@ -201,3 +201,46 @@ get_temp("November", 1999, data =nnmaps, celsius = TRUE,
            x[2:(length(x) - 1)] %>% mean %>% return
          })
 ```
+
+# Problem 3 - SAS
+
+This problem will be done entirely within SAS.
+
+Access the RECS 2020 data and download a copy of the data. Load or import the data into SAS. I will answer the following questions:
+
+### Part A: What state has the highest percentage of records?
+
+What state has the highest percentage of records? What percentage of all records correspond to Michigan? (Don't forget to account for the sampling weights!)
+
+```         
+```
+
+### Part B: Generate histogram (total electricity cost)
+
+Generate a histogram of the total electricity cost in dollars, amongst those with a strictly positive cost.
+
+```         
+```
+
+### Part C: Histogram (log total electricity cost)
+
+Generate a histogram of the log of the total electricity cost.
+
+```         
+```
+
+### Part D: Fit a linear regression model
+
+Fit a linear regression model predicting the log of the total electricity cost based upon the number of rooms in the hose and whether or not the house has a garage. (Don't forget weights)
+
+```         
+```
+
+### Part E: Predicted values and scatterplot
+
+Use the model to generate predicted values and create a scatterplot of predicted total electricity cost vs. actual total electricity cost (not on the log scale).
+
+```         
+```
+
+# Problem 4 - Multiple tools
