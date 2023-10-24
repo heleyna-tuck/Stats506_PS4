@@ -186,11 +186,17 @@ get_temp(10, 1998, data = nnmaps, average_fn = median)
 ```
 
 ```{r}
-get_temp(13, 1998, data = nnmaps)
+#get_temp(13, 1998, data = nnmaps)
+#Error:
+#Error in get_temp(13, 1998, data = nnmaps) :
+#Invalid month. Please provide a valid numeric value (1-12) or a month name.
 ```
 
 ```{r}
-get_temp(2, 2005, data = nnmaps)
+#get_temp(2, 2005, data = nnmaps)
+#Error:
+#Error in get_temp(2, 2005, data = nnmaps) :
+#Invalid year. Please provide a numeric year between 1997 and 2000.
 ```
 
 ```{r}
@@ -224,17 +230,17 @@ data recs;
  set in_lib.recs2020_public_v5;
 
 proc freq data = recs;
-	TABLES state_name / OUT = StateFreq;
-	WEIGHT NWEIGHT;
+    TABLES state_name / OUT = StateFreq;
+    WEIGHT NWEIGHT;
 RUN;
 
 proc sort data = StateFreq;
-	BY DESCENDING COUNT;
+    BY DESCENDING COUNT;
 RUN;
 
 DATA MichiganPercentage;
-	SET StateFreq;
-	WHERE state_name = 'Michigan';
+    SET StateFreq;
+    WHERE state_name = 'Michigan';
 RUN;
 ```
 
@@ -330,7 +336,7 @@ From the scatterplot, we can observe some actual and predicted values being quit
 
 # Problem 4 - Multiple tools
 
-The researcher\'s interest is in whether long-term concerns about climate change impact current day concerns about financial stability. To address this, the particular research question of interest is whether **the respondent\'s family is better off, the same, or worse off finanicially compared to 12 month\'s ago** can be predicted by **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years**. We also want to control for
+The researcher's interest is in whether long-term concerns about climate change impact current day concerns about financial stability. To address this, the particular research question of interest is whether **the respondent's family is better off, the same, or worse off finanicially compared to 12 month's ago** can be predicted by **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years**. We also want to control for
 
 -   How they rate the economic conditions today in the country.
 
@@ -340,7 +346,7 @@ The researcher\'s interest is in whether long-term concerns about climate change
 
 -   Race (use the 5-category version)
 
-We\'re going to pretend the raw data is extremely large and that we need to extract the subset of the data we\'re going to use before we can open it in Stata or R.
+We're going to pretend the raw data is extremely large and that we need to extract the subset of the data we're going to use before we can open it in Stata or R.
 
 Additionally, the data comes from a complex survey design, so we need to account for that in the analysis.
 
@@ -352,7 +358,7 @@ Take a look at the codebook. For very minor extra credit, how was the Codebook g
 
 ### Part B: Import Data into SAS, use proc sql to slect only the variables you'll need for your analysis, as well as subsetting the data if needed.
 
-Import the data into SAS (you can load the SAS data directly or import the CSV) and use `proc sql` to select only the variables you\'ll need for your analysis, as well as subsetting the data if needed. You can carry out variable transformations now, or save it for Stata.
+Import the data into SAS (you can load the SAS data directly or import the CSV) and use `proc sql` to select only the variables you'll need for your analysis, as well as subsetting the data if needed. You can carry out variable transformations now, or save it for Stata.
 
 ```         
 /* data libraries for reading/writing data: -------------------------------- */
@@ -367,13 +373,13 @@ data public;
  proc sql;
   create table subset_data as
   select
-  	CaseID,
-  	B3,
-  	ND2,
-  	ppethm,
-  	ppeduc5,
-  	GH1,
-  	B7_a
+    CaseID,
+    B3,
+    ND2,
+    ppethm,
+    ppeduc5,
+    GH1,
+    B7_a
   from public
  quit;
 ```
@@ -394,9 +400,9 @@ Above will make a new file public_sub.sas7bdat that has all the needed variables
 
 ## Stata
 
-### Part D: Demonstrate that you'be successfully extracted the appropriate data 
+### Part D: Demonstrate that you'be successfully extracted the appropriate data
 
-Demonstrate that you\'ve successfully extracted the appropriate data by showing the number of observations and variables. (Report these values via Stata code don\'t just say \"As we see in the Properties window\". The Codebook should give you a way to ensure the number of rows is as expected.)
+Demonstrate that you've successfully extracted the appropriate data by showing the number of observations and variables. (Report these values via Stata code don't just say "As we see in the Properties window". The Codebook should give you a way to ensure the number of rows is as expected.)
 
 ```         
 import sas using "C:\Users\heleyna\Downloads\public_sub (1).sas7bdat"
@@ -565,7 +571,7 @@ end of do-file
 . 
 ```
 
-As we can see above, the logistic regression can give us the answer to the researcher's question. The variable that corresponds to **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years** would be ND2. All of the p-values for each category show insignificance on the 0.05 scale. Each confidence interval includes 0 as well which indicates insignificance. Therefore, based on this analysis, we would fail to reject the null hypothesis that **the respondent\'s family is better off, the same, or worse off finanicially compared to 12 month\'s ago** cannot be predicted by **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years**.
+As we can see above, the logistic regression can give us the answer to the researcher's question. The variable that corresponds to **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years** would be ND2. All of the p-values for each category show insignificance on the 0.05 scale. Each confidence interval includes 0 as well which indicates insignificance. Therefore, based on this analysis, we would fail to reject the null hypothesis that **the respondent's family is better off, the same, or worse off finanicially compared to 12 month's ago** cannot be predicted by **thinking that the chance of experiencing a natural disaster or severe weather event will be higher, lower or about the same in 5 years**.
 
 ### Part G: Get the data out of Stata and into R
 
@@ -593,8 +599,27 @@ Use the survey package to obtain the pseudo-Rsq. Use the following code to set u
 svydesign(id = ~ caseid, weight = ~ weight_pop, data = dat)
 ```
 
-Obtain the pseudo-Rsq value for the logistic model fit above and report it:
+Obtain the pseudo-Rsq value for the logistic model fit above and report it
+
+Read in the dataset made in stata/sas below and get a visual using head(). Also load in the survey package:
 
 ```{r}
-
+library(survey)
+library(pscl)
+public_sub <- read_csv('/Users/19892/OneDrive/Documents/STATS506/ProblemSets/Stats506_PS4/public_sub.csv')
+head(public_sub)
 ```
+
+First, we will get the design of the survey and store it as design. Then, fit a logistic model to the data with the design and family = binomial. Print a summary of the log_mod and find the pseudo-rsq using the psrsq() function below:
+
+```{r}
+design <- svydesign(id = ~ CaseID, weight = ~ weight_pop, data = public_sub)
+
+log_mod <- svyglm(worse_off ~ as.factor(ND2) + as.factor(ppethm) + as.factor(ppeduc5) + as.factor(GH1) + as.factor(B7_a), design = design, family = binomial)
+
+summary(log_mod)
+p_r2 <- psrsq(log_mod)
+print(p_r2)
+```
+
+Above we can get the pseudo-rsq to be about 0.10676. This is fairly low, so the fit of the model is not great (want to be close to to 1).
